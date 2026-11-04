@@ -1,0 +1,2752 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Sayı Düellosu ⚔️ | seray & Sabri</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <!-- Canvas Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #0f0d1b;
+      --bg-card: rgba(26, 22, 48, 0.75);
+      --bg-card-border: rgba(255, 255, 255, 0.12);
+
+      --p1-color: #ec4899;
+      /* seray - Canlı Pembe/Gül */
+      --p1-glow: rgba(236, 72, 153, 0.4);
+      --p1-gradient: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
+
+      --p2-color: #3b82f6;
+      /* Sabri - Parlak Mavi/Kobalt */
+      --p2-glow: rgba(59, 130, 246, 0.4);
+      --p2-gradient: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+
+      --budget-gold: #f59e0b;
+      --budget-glow: rgba(245, 158, 11, 0.35);
+      --score-green: #10b981;
+      --joker-flame: #ef4444;
+      --joker-glow: rgba(239, 68, 68, 0.5);
+
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% -20%, #2e1065 0%, #0f0d1b 65%, #05050a 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      overflow-x: hidden;
+      padding: 12px 14px 30px;
+    }
+
+    /* Ambient Background Glows */
+    .ambient-glow {
+      position: fixed;
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      filter: blur(100px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.28;
+      transition: all 0.8s ease;
+    }
+
+    .glow-left {
+      top: 5%;
+      left: -60px;
+      background: var(--p1-color);
+    }
+
+    .glow-right {
+      bottom: 5%;
+      right: -60px;
+      background: var(--p2-color);
+    }
+
+    /* App Shell */
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 4px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, #ec4899, #8b5cf6);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 14px rgba(236, 72, 153, 0.35);
+    }
+
+    .brand-text h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(to right, #ffffff, #e2e8f0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.1;
+    }
+
+    .brand-text span {
+      font-size: 0.72rem;
+      color: #cbd5e1;
+      font-weight: 600;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.2s ease;
+    }
+
+    .icon-btn:active {
+      transform: scale(0.92);
+      background: rgba(255, 255, 255, 0.16);
+    }
+
+    /* Match Info Bar */
+    .round-indicator-pill {
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--bg-card-border);
+      border-radius: 100px;
+      padding: 6px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    .round-tag {
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .round-badge-highlight {
+      background: linear-gradient(135deg, #f43f5e, #8b5cf6);
+      color: white;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+    }
+
+    /* Scoreboard Card */
+    .scoreboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .player-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1.5px solid var(--bg-card-border);
+      border-radius: var(--radius-lg);
+      padding: 12px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .player-card.active-turn {
+      border-color: rgba(255, 255, 255, 0.6);
+      box-shadow: 0 0 25px rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .player-card.seray-card.active-turn {
+      border-color: var(--p1-color);
+      box-shadow: 0 0 20px var(--p1-glow);
+    }
+
+    .player-card.sabri-card.active-turn {
+      border-color: var(--p2-color);
+      box-shadow: 0 0 20px var(--p2-glow);
+    }
+
+    .player-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .player-name-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .avatar-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .seray-dot {
+      background: var(--p1-color);
+      box-shadow: 0 0 8px var(--p1-color);
+    }
+
+    .sabri-dot {
+      background: var(--p2-color);
+      box-shadow: 0 0 8px var(--p2-color);
+    }
+
+    .player-name {
+      font-weight: 800;
+      font-size: 1.05rem;
+      font-family: 'Outfit', sans-serif;
+      letter-spacing: -0.01em;
+    }
+
+    .seray-text {
+      color: #f472b6;
+    }
+
+    .sabri-text {
+      color: #60a5fa;
+    }
+
+    .joker-mini-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-muted);
+    }
+
+    .joker-mini-badge.ready {
+      background: rgba(239, 68, 68, 0.18);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+    }
+
+    .joker-mini-badge.active-round {
+      background: linear-gradient(135deg, #ef4444, #f97316);
+      border-color: transparent;
+      color: white;
+      animation: flamePulse 1.2s infinite alternate;
+    }
+
+    @keyframes flamePulse {
+      0% {
+        box-shadow: 0 0 5px rgba(239, 68, 68, 0.4);
+        transform: scale(1);
+      }
+
+      100% {
+        box-shadow: 0 0 14px rgba(249, 115, 22, 0.8);
+        transform: scale(1.04);
+      }
+    }
+
+    /* Score vs Budget Visual Contrast */
+    .stats-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .stat-box {
+      border-radius: var(--radius-md);
+      padding: 6px 8px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stat-box.score-box {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.28);
+    }
+
+    .stat-box.budget-box {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.28);
+      transition: all 0.3s ease;
+    }
+
+    .stat-box.budget-box.hidden-budget {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .stat-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .score-box .stat-label {
+      color: #6ee7b7;
+    }
+
+    .budget-box .stat-label {
+      color: #fcd34d;
+    }
+
+    .budget-box.hidden-budget .stat-label {
+      color: #94a3b8;
+    }
+
+    .stat-val {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 900;
+      line-height: 1.1;
+    }
+
+    .score-box .stat-val {
+      color: #34d399;
+    }
+
+    .budget-box .stat-val {
+      color: #fbbf24;
+    }
+
+    .budget-box.hidden-budget .stat-val {
+      color: #94a3b8;
+      font-size: 1.05rem;
+    }
+
+    /* Screen Views Transition */
+    .screen-panel {
+      background: var(--bg-card);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1.5px solid var(--bg-card-border);
+      border-radius: var(--radius-xl);
+      padding: 20px 18px;
+      box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.5);
+      position: relative;
+      animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* Screen: Secret Turn Input */
+    .turn-header {
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .turn-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 16px;
+      border-radius: 100px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .turn-badge.seray-bg {
+      background: rgba(236, 72, 153, 0.2);
+      border: 1px solid var(--p1-color);
+      color: #f472b6;
+    }
+
+    .turn-badge.sabri-bg {
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid var(--p2-color);
+      color: #60a5fa;
+    }
+
+    .turn-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+    }
+
+    .turn-subtitle {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    /* Number Display & DIRECT INPUT Control */
+    .number-display-box {
+      background: rgba(0, 0, 0, 0.45);
+      border: 2px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--radius-lg);
+      padding: 14px 10px 12px;
+      text-align: center;
+      margin-bottom: 14px;
+      position: relative;
+    }
+
+    /* Input row with Stepper buttons */
+    .stepper-input-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .stepper-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: white;
+      font-size: 1.15rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .stepper-btn:active {
+      transform: scale(0.9);
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    /* Direct Editable Big Input */
+    .direct-number-input {
+      font-family: 'Outfit', sans-serif;
+      font-size: 3.6rem;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      text-align: center;
+      width: 140px;
+      background: transparent;
+      border: 2px dashed rgba(255, 255, 255, 0.25);
+      border-radius: 14px;
+      outline: none;
+      padding: 2px 4px;
+      transition: all 0.2s ease;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    .direct-number-input:focus {
+      border-style: solid;
+      border-color: #ffffff;
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+
+    .direct-number-input.seray-style {
+      color: #f472b6;
+      text-shadow: 0 0 20px rgba(236, 72, 153, 0.6);
+    }
+
+    .direct-number-input.sabri-style {
+      color: #60a5fa;
+      text-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
+    }
+
+    /* Remove number spin buttons */
+    .direct-number-input::-webkit-outer-spin-button,
+    .direct-number-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .direct-number-input[type=number] {
+      -moz-appearance: textfield;
+    }
+
+    .manual-type-hint {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .number-cost-hint {
+      font-size: 0.8rem;
+      color: #fbbf24;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    /* Slider styling */
+    .slider-wrap {
+      margin: 12px 4px 10px;
+    }
+
+    .custom-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 12px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.14);
+      outline: none;
+      transition: background 0.2s;
+    }
+
+    .custom-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #ffffff;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      border: 3px solid var(--p1-color);
+      transition: transform 0.1s, border-color 0.2s;
+    }
+
+    .custom-slider.sabri-slider::-webkit-slider-thumb {
+      border-color: var(--p2-color);
+    }
+
+    .custom-slider::-webkit-slider-thumb:active {
+      transform: scale(1.2);
+    }
+
+    .slider-markers {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      margin-top: 6px;
+      padding: 0 4px;
+    }
+
+    /* Quick Preset Buttons */
+    .preset-btn-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .preset-btn {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-md);
+      padding: 8px 0;
+      color: var(--text-main);
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .preset-btn:active {
+      transform: scale(0.92);
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .preset-btn.max-btn {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.4);
+      color: #fbbf24;
+    }
+
+    /* Joker Toggle Container */
+    .joker-toggle-card {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1.5px dashed rgba(239, 68, 68, 0.4);
+      border-radius: var(--radius-lg);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .joker-toggle-card.active {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(249, 115, 22, 0.25));
+      border: 1.5px solid #ef4444;
+      box-shadow: 0 0 16px rgba(239, 68, 68, 0.35);
+    }
+
+    .joker-toggle-card.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      border-style: solid;
+      border-color: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .joker-info-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .joker-flame-icon {
+      font-size: 1.6rem;
+    }
+
+    .joker-info-left h4 {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #fca5a5;
+    }
+
+    .joker-info-left p {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .joker-checkbox-visual {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .joker-toggle-card.active .joker-checkbox-visual {
+      background: #ef4444;
+      border-color: #ef4444;
+      color: white;
+    }
+
+    /* Alert Banner */
+    .alert-banner {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(245, 158, 11, 0.2));
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #fed7aa;
+      animation: alertPulse 1.5s infinite alternate;
+    }
+
+    @keyframes alertPulse {
+      0% {
+        border-color: rgba(239, 68, 68, 0.4);
+      }
+
+      100% {
+        border-color: rgba(245, 158, 11, 0.9);
+      }
+    }
+
+    /* Action Buttons */
+    .action-btn {
+      width: 100%;
+      height: 56px;
+      border-radius: var(--radius-lg);
+      border: none;
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: white;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .action-btn:active {
+      transform: scale(0.97);
+    }
+
+    .action-btn.btn-seray {
+      background: var(--p1-gradient);
+      box-shadow: 0 8px 25px var(--p1-glow);
+    }
+
+    .action-btn.btn-sabri {
+      background: var(--p2-gradient);
+      box-shadow: 0 8px 25px var(--p2-glow);
+    }
+
+    .action-btn.btn-gold {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      box-shadow: 0 8px 25px var(--budget-glow);
+    }
+
+    .action-btn.btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--text-main);
+    }
+
+    /* Privacy Screen (Pass the Phone) */
+    .pass-phone-container {
+      text-align: center;
+      padding: 24px 10px;
+    }
+
+    .phone-icon-anim {
+      font-size: 4rem;
+      margin-bottom: 16px;
+      display: inline-block;
+      animation: phoneTilt 2s infinite ease-in-out;
+    }
+
+    @keyframes phoneTilt {
+
+      0%,
+      100% {
+        transform: rotate(-8deg) scale(1);
+      }
+
+      50% {
+        transform: rotate(8deg) scale(1.08);
+      }
+    }
+
+    .pass-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .pass-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+      margin-bottom: 24px;
+    }
+
+    .pass-shield-box {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: #94a3b8;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    /* Countdown Screen */
+    .countdown-container {
+      text-align: center;
+      padding: 50px 10px;
+    }
+
+    .countdown-number {
+      font-family: 'Outfit', sans-serif;
+      font-size: 6rem;
+      font-weight: 900;
+      color: #ffffff;
+      text-shadow: 0 0 30px rgba(236, 72, 153, 0.8);
+      animation: countZoom 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28) infinite;
+    }
+
+    @keyframes countZoom {
+      0% {
+        transform: scale(0.4);
+        opacity: 0;
+      }
+
+      50% {
+        transform: scale(1.15);
+        opacity: 1;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    /* Round Result Screen */
+    .result-cards-comparison {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 8px;
+      margin: 16px 0;
+    }
+
+    .reveal-card {
+      background: rgba(0, 0, 0, 0.45);
+      border-radius: var(--radius-lg);
+      padding: 16px 8px;
+      text-align: center;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+
+    .reveal-card.seray {
+      border-color: var(--p1-color);
+    }
+
+    .reveal-card.sabri {
+      border-color: var(--p2-color);
+    }
+
+    .reveal-card.winner {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: #10b981;
+      transform: scale(1.04);
+      box-shadow: 0 0 25px rgba(16, 185, 129, 0.3);
+    }
+
+    .reveal-player-label {
+      font-size: 0.85rem;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .reveal-num {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.8rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .reveal-budget-drain {
+      font-size: 0.75rem;
+      color: #f87171;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    .vs-badge {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 900;
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.08);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .outcome-banner {
+      text-align: center;
+      padding: 14px 10px;
+      border-radius: var(--radius-md);
+      margin-bottom: 16px;
+      font-weight: 800;
+    }
+
+    .outcome-banner.win-banner {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(6, 95, 70, 0.3));
+      border: 1.5px solid #10b981;
+      color: #a7f3d0;
+    }
+
+    .outcome-banner.draw-banner {
+      background: linear-gradient(135deg, rgba(148, 163, 184, 0.2), rgba(71, 85, 105, 0.3));
+      border: 1.5px solid #94a3b8;
+      color: #f1f5f9;
+    }
+
+    .outcome-banner h3 {
+      font-size: 1.25rem;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .outcome-banner p {
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-top: 3px;
+      color: #cbd5e1;
+    }
+
+    /* Flirt Penalty / Dare Box */
+    .penalty-box {
+      background: radial-gradient(circle at 50% 0%, rgba(244, 63, 94, 0.22) 0%, rgba(30, 20, 50, 0.6) 100%);
+      border: 1.5px solid rgba(244, 63, 94, 0.45);
+      border-radius: var(--radius-lg);
+      padding: 16px 14px;
+      margin-bottom: 18px;
+      position: relative;
+      box-shadow: 0 8px 24px rgba(244, 63, 94, 0.2);
+    }
+
+    .penalty-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .penalty-tag {
+      background: linear-gradient(135deg, #f43f5e, #ec4899);
+      color: white;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 3px 10px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .reroll-penalty-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fce7f3;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .reroll-penalty-btn:active {
+      transform: scale(0.92);
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .penalty-text {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff1f2;
+      line-height: 1.45;
+      margin: 8px 0;
+      text-align: center;
+      font-style: italic;
+    }
+
+    .penalty-target-badge {
+      text-align: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #fca5a5;
+    }
+
+    /* HOT FINAL EVENT BOX */
+    .hot-event-box {
+      background: radial-gradient(circle at 50% 0%, rgba(239, 68, 68, 0.3) 0%, rgba(40, 15, 30, 0.8) 100%);
+      border: 2px solid #ef4444;
+      border-radius: var(--radius-lg);
+      padding: 16px 14px;
+      margin-bottom: 18px;
+      position: relative;
+      box-shadow: 0 0 25px rgba(239, 68, 68, 0.35);
+      animation: hotPulse 2s infinite alternate;
+    }
+
+    @keyframes hotPulse {
+      0% {
+        box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+        border-color: #ef4444;
+      }
+
+      100% {
+        box-shadow: 0 0 30px rgba(249, 115, 22, 0.6);
+        border-color: #f97316;
+      }
+    }
+
+    .hot-tag {
+      background: linear-gradient(135deg, #ef4444, #f97316);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      padding: 4px 12px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .hot-event-text {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.5;
+      margin: 10px 0;
+      text-align: center;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Final Game Over Screen */
+    .gameover-header {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .trophy-emoji {
+      font-size: 3.8rem;
+      display: inline-block;
+      animation: floatTrophy 2.5s infinite ease-in-out;
+    }
+
+    @keyframes floatTrophy {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-8px);
+      }
+    }
+
+    .winner-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 900;
+      margin-top: 4px;
+    }
+
+    .final-scores-bar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: var(--radius-lg);
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+
+    .final-score-item {
+      text-align: center;
+    }
+
+    .final-score-val {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 900;
+    }
+
+    /* Round History Table */
+    .history-card {
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 12px;
+      margin-bottom: 18px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .history-card h4 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .history-row {
+      display: grid;
+      grid-template-columns: 50px 1fr 1fr 1fr;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 6px;
+      font-size: 0.8rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .history-row:last-child {
+      border-bottom: none;
+    }
+
+    .history-tag {
+      font-weight: 700;
+      color: #94a3b8;
+    }
+
+    /* Rules Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: #18152e;
+      border: 1.5px solid var(--bg-card-border);
+      border-radius: var(--radius-xl);
+      width: 100%;
+      max-width: 440px;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 22px 18px;
+      position: relative;
+    }
+
+    .modal-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 800;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .close-modal-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.4rem;
+      cursor: pointer;
+    }
+
+    .rule-item {
+      margin-bottom: 12px;
+      font-size: 0.85rem;
+      line-height: 1.45;
+      color: #cbd5e1;
+    }
+
+    .rule-item strong {
+      color: #ffffff;
+    }
+
+    /* Player Name Edit Section in Modal */
+    .name-edit-section {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      margin-top: 14px;
+    }
+
+    .name-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .name-input-group label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .name-input {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: var(--radius-md);
+      color: white;
+      padding: 10px 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      outline: none;
+    }
+
+    .name-input:focus {
+      border-color: #a855f7;
+    }
+
+    /* Fallback canvas for confetti */
+    #customConfettiCanvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 999;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Ambient Light -->
+  <div class="ambient-glow glow-left" id="ambientLeft"></div>
+  <div class="ambient-glow glow-right" id="ambientRight"></div>
+
+  <!-- Fallback Confetti Canvas -->
+  <canvas id="customConfettiCanvas"></canvas>
+
+  <div class="app-container">
+
+    <!-- Top Navigation -->
+    <header>
+      <div class="brand">
+        <div class="brand-icon">⚔️</div>
+        <div class="brand-text">
+          <h1>Sayı Düellosu</h1>
+          <span> Taktik Oyun</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="soundToggleBtn" title="Sesi Aç/Kapat">🔊</button>
+        <button class="icon-btn" id="rulesBtn" title="Kurallar & Ayarlar">⚙️</button>
+      </div>
+    </header>
+
+    <!-- Tur & Durum Bilgi Çubuğu -->
+    <div class="round-indicator-pill">
+      <div class="round-tag">
+        <span>🎮</span>
+        <span id="roundCounterText">Tur 1 / 5</span>
+      </div>
+      <div class="round-badge-highlight" id="roundStatusBadge">seray'in Hamlesi</div>
+    </div>
+
+    <!-- Skor ve Kalan Bütçe Tablosu (BÜTÇE GİZLİLİK KORUMALI) -->
+    <div class="scoreboard-grid">
+      <!-- seray Card -->
+      <div class="player-card seray-card" id="serayCard">
+        <div class="player-header">
+          <div class="player-name-wrap">
+            <span class="avatar-dot seray-dot"></span>
+            <span class="player-name seray-text" id="p1DisplayName">seray</span>
+          </div>
+          <span class="joker-mini-badge ready" id="p1JokerBadge">🔥 Joker Hazır</span>
+        </div>
+        <div class="stats-row">
+          <div class="stat-box score-box">
+            <span class="stat-label">🏆 SKOR</span>
+            <span class="stat-val" id="p1ScoreVal">0</span>
+          </div>
+          <div class="stat-box budget-box" id="p1BudgetBox">
+            <span class="stat-label" id="p1BudgetLabel">⚡ BÜTÇE</span>
+            <span class="stat-val" id="p1BudgetVal">250</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sabri Card -->
+      <div class="player-card sabri-card" id="sabriCard">
+        <div class="player-header">
+          <div class="player-name-wrap">
+            <span class="avatar-dot sabri-dot"></span>
+            <span class="player-name sabri-text" id="p2DisplayName">Sabri</span>
+          </div>
+          <span class="joker-mini-badge ready" id="p2JokerBadge">🔥 Joker Hazır</span>
+        </div>
+        <div class="stats-row">
+          <div class="stat-box score-box">
+            <span class="stat-label">🏆 SKOR</span>
+            <span class="stat-val" id="p2ScoreVal">0</span>
+          </div>
+          <div class="stat-box budget-box" id="p2BudgetBox">
+            <span class="stat-label" id="p2BudgetLabel">⚡ BÜTÇE</span>
+            <span class="stat-val" id="p2BudgetVal">250</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN DYNAMIC CONTENT AREA -->
+    <div id="gameScreenContainer">
+
+      <!-- 1. ADIM: seray'in Gizli Sayı Seçimi Ekranı -->
+      <div class="screen-panel" id="p1TurnScreen">
+        <div class="turn-header">
+          <div class="turn-badge seray-bg">
+            <span>🤫 Gizli Seçim</span> • <span id="p1TurnBadgeName">seray</span>
+          </div>
+          <h2 class="turn-title">Sayını Belirle</h2>
+          <p class="turn-subtitle">Sabri ekranı görmesin! Sayını elle yaz veya kaydırıcıyı kullan.</p>
+        </div>
+
+        <!-- Number Display & Direct Keyboard Input -->
+        <div class="number-display-box">
+          <div class="manual-type-hint">
+            <span>✏️ Sayıya dokunup elle yazabilirsin:</span>
+          </div>
+          <div class="stepper-input-container">
+            <button type="button" class="stepper-btn" onclick="stepNumber('p1', -5)" title="-5">-5</button>
+            <button type="button" class="stepper-btn" onclick="stepNumber('p1', -1)" title="-1">-1</button>
+
+            <!-- Direct numeric input -->
+            <input type="number" id="p1NumberInput" class="direct-number-input seray-style" min="0" max="100" value="25"
+              inputmode="numeric" />
+
+            <button type="button" class="stepper-btn" onclick="stepNumber('p1', +1)" title="+1">+1</button>
+            <button type="button" class="stepper-btn" onclick="stepNumber('p1', +5)" title="+5">+5</button>
+          </div>
+          <div class="number-cost-hint" id="p1CostHint">Kalan Bütçe: 250 → Seçim sonrası: 225</div>
+        </div>
+
+        <!-- Slider -->
+        <div class="slider-wrap">
+          <input type="range" min="0" max="100" value="25" class="custom-slider" id="p1Slider" />
+          <div class="slider-markers">
+            <span>0</span>
+            <span id="p1MaxPossibleText">Maks: 100</span>
+          </div>
+        </div>
+
+        <!-- Quick Presets -->
+        <div class="preset-btn-grid">
+          <button class="preset-btn" onclick="setPreset('p1', 0)">0</button>
+          <button class="preset-btn" onclick="setPreset('p1', 20)">20</button>
+          <button class="preset-btn" onclick="setPreset('p1', 50)">50</button>
+          <button class="preset-btn" onclick="setPreset('p1', 75)">75</button>
+          <button class="preset-btn max-btn" id="p1MaxBtn" onclick="setPresetMax('p1')">MAKS</button>
+        </div>
+
+        <!-- Joker Card -->
+        <div class="joker-toggle-card" id="p1JokerToggle" onclick="toggleJoker('p1')">
+          <div class="joker-info-left">
+            <span class="joker-flame-icon">🔥</span>
+            <div>
+              <h4>İkiye Katla Jokeri</h4>
+              <p id="p1JokerSubtext">Kazanana 2 Skor Puanı verir! (1 kez kullanılabilir)</p>
+            </div>
+          </div>
+          <div class="joker-checkbox-visual" id="p1JokerCheck">✓</div>
+        </div>
+
+        <button class="action-btn btn-seray" id="p1LockBtn" onclick="lockPlayer1Choice()">
+          <span>Seçimi Kilitle & Hazırım</span> 🔒
+        </button>
+      </div>
+
+      <!-- 2. ADIM: Telefonu Sabri'ye Uzat Ekranı (Gizlilik Kalkanı) -->
+      <div class="screen-panel" id="passScreen" style="display: none;">
+        <div class="pass-phone-container">
+          <div class="phone-icon-anim">📱 ➔ 🤫</div>
+          <h2 class="pass-title" id="passTitleText">Telefonu Sabri'ye Uzatın!</h2>
+          <p class="pass-desc">
+            <strong id="passPlayerDoneName">seray</strong> gizli hamlesini kilitledi.<br />
+            Şimdi telefonu <strong id="passPlayerNextName">Sabri</strong> alsın ve hazır olduğunda başlasın!
+          </p>
+
+          <div class="pass-shield-box">
+            <span>🔒</span>
+            <span>seray'in seçtiği sayı ve kalan bütçesi Sabri'den gizlendi.</span>
+          </div>
+
+          <button class="action-btn btn-sabri" onclick="startPlayer2Turn()">
+            <span id="passBtnText">Ben Sabri, Hazırım! Başla</span> 🚀
+          </button>
+        </div>
+      </div>
+
+      <!-- 3. ADIM: Sabri'nin Gizli Sayı Seçimi Ekranı -->
+      <div class="screen-panel" id="p2TurnScreen" style="display: none;">
+        <div class="turn-header">
+          <div class="turn-badge sabri-bg">
+            <span>🤫 Gizli Seçim</span> • <span id="p2TurnBadgeName">Sabri</span>
+          </div>
+          <h2 class="turn-title">Sayını Belirle</h2>
+          <p class="turn-subtitle">seray ekranı görmesin! Sayını elle yaz veya kaydırıcıyı kullan.</p>
+        </div>
+
+        <!-- If seray activated Joker this round, warn Sabri -->
+        <div class="alert-banner" id="p2JokerWarningBanner" style="display: none;">
+          <span style="font-size: 1.4rem;">🔥</span>
+          <div>
+            <strong id="p2JokerWarningText">DİKKAT: seray bu tur "İkiye Katla" jokerini kullandı!</strong>
+            <div style="font-size: 0.72rem; color: #fde68a;">Bu turun galibi tam 2 skor puanı kazanacak!</div>
+          </div>
+        </div>
+
+        <!-- Number Display & Direct Keyboard Input -->
+        <div class="number-display-box">
+          <div class="manual-type-hint">
+            <span>✏️ Sayıya dokunup elle yazabilirsin:</span>
+          </div>
+          <div class="stepper-input-container">
+            <button type="button" class="stepper-btn" onclick="stepNumber('p2', -5)" title="-5">-5</button>
+            <button type="button" class="stepper-btn" onclick="stepNumber('p2', -1)" title="-1">-1</button>
+
+            <!-- Direct numeric input -->
+            <input type="number" id="p2NumberInput" class="direct-number-input sabri-style" min="0" max="100" value="25"
+              inputmode="numeric" />
+
+            <button type="button" class="stepper-btn" onclick="stepNumber('p2', +1)" title="+1">+1</button>
+            <button type="button" class="stepper-btn" onclick="stepNumber('p2', +5)" title="+5">+5</button>
+          </div>
+          <div class="number-cost-hint" id="p2CostHint">Kalan Bütçe: 250 → Seçim sonrası: 225</div>
+        </div>
+
+        <!-- Slider -->
+        <div class="slider-wrap">
+          <input type="range" min="0" max="100" value="25" class="custom-slider sabri-slider" id="p2Slider" />
+          <div class="slider-markers">
+            <span>0</span>
+            <span id="p2MaxPossibleText">Maks: 100</span>
+          </div>
+        </div>
+
+        <!-- Quick Presets -->
+        <div class="preset-btn-grid">
+          <button class="preset-btn" onclick="setPreset('p2', 0)">0</button>
+          <button class="preset-btn" onclick="setPreset('p2', 20)">20</button>
+          <button class="preset-btn" onclick="setPreset('p2', 50)">50</button>
+          <button class="preset-btn" onclick="setPreset('p2', 75)">75</button>
+          <button class="preset-btn max-btn" id="p2MaxBtn" onclick="setPresetMax('p2')">MAKS</button>
+        </div>
+
+        <!-- Joker Card -->
+        <div class="joker-toggle-card" id="p2JokerToggle" onclick="toggleJoker('p2')">
+          <div class="joker-info-left">
+            <span class="joker-flame-icon">🔥</span>
+            <div>
+              <h4>İkiye Katla Jokeri</h4>
+              <p id="p2JokerSubtext">Kazanana 2 Skor Puanı verir! (1 kez kullanılabilir)</p>
+            </div>
+          </div>
+          <div class="joker-checkbox-visual" id="p2JokerCheck">✓</div>
+        </div>
+
+        <button class="action-btn btn-sabri" id="p2LockBtn" onclick="lockPlayer2Choice()">
+          <span>Seçimi Kilitle & Düelloyu Başlat</span> ⚔️
+        </button>
+      </div>
+
+      <!-- 4. ADIM: 3, 2, 1 Geri Sayım Ekranı -->
+      <div class="screen-panel" id="countdownScreen" style="display: none;">
+        <div class="countdown-container">
+          <p
+            style="font-size: 0.9rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">
+            Sayılar Karşılaştırılıyor
+          </p>
+          <div class="countdown-number" id="countdownDigit">3</div>
+          <p style="font-size: 0.85rem; color: #cbd5e1; margin-top: 10px;" id="countdownSub">Nefesler tutuldu...</p>
+        </div>
+      </div>
+
+      <!-- 5. ADIM: Tur Sonucu & Ceza Ekranı -->
+      <div class="screen-panel" id="roundResultScreen" style="display: none;">
+
+        <!-- Outcome Banner -->
+        <div class="outcome-banner win-banner" id="outcomeBanner">
+          <h3 id="outcomeTitle">🎉 seray KAZANDI!</h3>
+          <p id="outcomeSubtitle">+1 Skor Puanı eklendi</p>
+        </div>
+
+        <!-- Cards comparison -->
+        <div class="result-cards-comparison">
+          <div class="reveal-card seray" id="revealCardP1">
+            <div class="reveal-player-label seray-text" id="revealP1Name">seray</div>
+            <div class="reveal-num seray-text" id="revealP1Num">45</div>
+            <div class="reveal-budget-drain" id="revealP1Drain">-45 Bütçe</div>
+          </div>
+
+          <div class="vs-badge">VS</div>
+
+          <div class="reveal-card sabri" id="revealCardP2">
+            <div class="reveal-player-label sabri-text" id="revealP2Name">Sabri</div>
+            <div class="reveal-num sabri-text" id="revealP2Num">30</div>
+            <div class="reveal-budget-drain" id="revealP2Drain">-30 Bütçe</div>
+          </div>
+        </div>
+
+        <!-- Taktik Oyun Cezası / Görevi Kutusu -->
+        <div class="penalty-box" id="penaltyCardBox">
+          <div class="penalty-header">
+            <span class="penalty-tag">
+              <span>战术</span> <span id="penaltyHeaderTag">Tur Kaybedenine Taktik Ceza</span>
+            </span>
+            <button class="reroll-penalty-btn" onclick="rerollCurrentPenalty()" title="Başka Ceza Çek">
+              <span>🎲</span> Başka Çek
+            </button>
+          </div>
+          <div class="penalty-target-badge" id="penaltyTargetText">Sabri için Görev Zamanı:</div>
+          <div class="penalty-text" id="currentPenaltyText">
+            "Kulağına yaklaş ve sadece ikinizin duyacağı tatlı/hafif ayıp bir sır fısılda 🤫"
+          </div>
+        </div>
+
+        <!-- Next Tur Button -->
+        <button class="action-btn btn-gold" id="nextRoundBtn" onclick="proceedToNextRound()">
+          <span>Sonraki Tura Geç (Tur 2/5)</span> ➔
+        </button>
+      </div>
+
+      <!-- 6. ADIM: Maç Bitti / Genel Sonuç, HOT EVENT GÖREVLERİ & Rövanş Ekranı -->
+      <div class="screen-panel" id="gameOverScreen" style="display: none;">
+        <div class="gameover-header">
+          <div class="trophy-emoji" id="finalTrophy">🏆</div>
+          <h2 class="winner-title" id="finalWinnerText">seray Maçı Kazandı!</h2>
+          <p style="color: var(--text-muted); font-size: 0.85rem;" id="finalWinnerSubtitle">
+            5 turluk nefes kesen düellonun galibi!
+          </p>
+        </div>
+
+        <!-- TOPLAM KALAN BÜTÇELERİN BÜYÜK FİNALDE AÇIKLANMASI -->
+        <div class="final-scores-bar">
+          <div class="final-score-item">
+            <div class="seray-text" style="font-weight: 800; font-size: 0.95rem;" id="finalP1Name">seray</div>
+            <div class="final-score-val seray-text" id="finalP1Score">3</div>
+            <div style="font-size: 0.75rem; color: #fbbf24; font-weight: 700;" id="finalP1RemainingBudget">⚡ 110 Kalan
+              Bütçe</div>
+          </div>
+
+          <div style="font-size: 1.6rem; font-weight: 900; color: #64748b;">-</div>
+
+          <div class="final-score-item">
+            <div class="sabri-text" style="font-weight: 800; font-size: 0.95rem;" id="finalP2Name">Sabri</div>
+            <div class="final-score-val sabri-text" id="finalP2Score">2</div>
+            <div style="font-size: 0.75rem; color: #fbbf24; font-weight: 700;" id="finalP2RemainingBudget">⚡ 95 Kalan
+              Bütçe</div>
+          </div>
+        </div>
+
+        <!-- 🔥 BÜYÜK ŞAMPİYONLUK HOT EVENT GÖREVİ KUTUSU -->
+        <div class="hot-event-box" id="finalHotEventCard">
+          <div class="penalty-header">
+            <span class="hot-tag">
+              <span>🔥</span> <span id="hotEventTag">ŞAMPİYONUN BÜYÜK ZAFER ÖDÜLÜ</span>
+            </span>
+            <button class="reroll-penalty-btn" onclick="rerollFinalHotDare()" title="Başka Hot Görev Çek">
+              <span>🎲</span> Başka Hot Görev
+            </button>
+          </div>
+          <div class="penalty-target-badge" id="hotEventTargetText">Kaybeden Sabri, Şampiyon seray'e yapacak:</div>
+          <div class="hot-event-text" id="currentHotEventText">
+            "Boynunun en hassas noktasına 5 saniye boyunca sıcacık, derin bir öpücük kondur ve nefesini hissettir 💋"
+          </div>
+        </div>
+
+        <!-- Round by round history -->
+        <div class="history-card">
+          <h4>Tur Geçmişi (Tüm Sayılar ve Hamleler)</h4>
+          <div id="historyRowsContainer">
+            <!-- Rows injected by JS -->
+          </div>
+        </div>
+
+        <button class="action-btn btn-gold" onclick="restartRematch()">
+          <span>🔄 Rövanş Maçı Başlat</span>
+        </button>
+      </div>
+
+    </div><!-- End gameScreenContainer -->
+
+  </div><!-- End app-container -->
+
+  <!-- Rules & Settings Modal -->
+  <div class="modal-overlay" id="rulesModal">
+    <div class="modal-card">
+      <div class="modal-title">
+        <span>⚔️ Oyun Kuralları</span>
+        <button class="close-modal-btn" onclick="closeRulesModal()">✕</button>
+      </div>
+
+      <div class="rule-item">
+        <strong>🎯 5 Turluk Maç:</strong> Maç tam 5 tur sürer. 5 turun sonunda en yüksek skor puanına ulaşan şampiyon
+        olur.
+      </div>
+      <div class="rule-item">
+        <strong>⚡ 250 Sayı Bütçesi:</strong> Her oyuncu 250 bütçeyle başlar. Her tur 0–100 arası sayı seçilir.
+        Seçtiğiniz sayı bütçenizden düşer!
+      </div>
+      <div class="rule-item">
+        <strong>🤫 Gizli Bütçe Taktigi:</strong> Oyun boyunca rakibinizin bütçesini göremezsiniz! Sadece kendi bütçenizi
+        bilirsiniz. Kalan bütçeler 5. turun sonunda büyük finalde açığa çıkar!
+      </div>
+      <div class="rule-item">
+        <strong>⌨️ Elle Giriş & Kaydırıcı:</strong> Sayıyı doğrudan klavyeyle kutucuğa dokunarak yazabilir, -1/+1
+        butonlarıyla ayarlayabilir veya kaydırıcıyı kullanabilirsiniz.
+      </div>
+      <div class="rule-item">
+        <strong>🔥 İkiye Katla Jokeri:</strong> Maç boyunca her oyuncu 1 kez kullanabilir. Kazanan 2 puan alır. Jokeri
+        açan kaybederse rakip 2 puan kazanır!
+      </div>
+      <div class="rule-item">
+        <strong>💋 20 Tur Cezası & 10 HOT Şampiyon Görevi:</strong> Her tur sonunda kaybeden tarafa romantik bir flört
+        görevi gelir. 5 turun sonunda şampiyon olan için ise 10 özel ve daha cesur HOT event görevi açılır!
+      </div>
+
+      <!-- Player Names Customization -->
+      <div class="name-edit-section">
+        <h4 style="font-size: 0.85rem; margin-bottom: 8px;">Oyuncu İsimlerini Değiştir</h4>
+        <div class="name-input-group">
+          <label for="inputNameP1">1. Oyuncu Adı:</label>
+          <input type="text" id="inputNameP1" class="name-input" value="seray" maxlength="15" />
+        </div>
+        <div class="name-input-group">
+          <label for="inputNameP2">2. Oyuncu Adı:</label>
+          <input type="text" id="inputNameP2" class="name-input" value="Sabri" maxlength="15" />
+        </div>
+        <button class="action-btn btn-secondary" style="height: 42px; font-size: 0.85rem; margin-top: 4px;"
+          onclick="savePlayerNames()">
+          İsimleri Kaydet
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =======================================================================
+       1. OYUN VERİLERİ VE DURUM YÖNETİMİ
+       ======================================================================= */
+
+    // 20 Romantik / İlk Date / Flört Tur Cezaları
+    const ROMANTIC_PENALTIES = [
+      "Boynuna ya da yanağına minik, sıcacık ve tatlı bir öpücük kondur 💋",
+      "Kulağına hafifçe yaklaş ve sadece ikinizin duyacağı tatlı/hafif ayıp bir sır fısılda 🤫",
+      "Gözlerinin tam içine bakarak en tatlı ses tonunla 'Sen gerçekten çok tatlısın yahu...' de 🥰",
+      "Gözlerinin içine hiç gülmeden ve kırpmadan 10 saniye boyunca derin derin bak 👀",
+      "Ellerini tut ve avucuna baş parmağınla hafifçe dairesel bir masaj yap 🤝",
+      "Ona bugüne kadar aldığın en içten ve güzel iltifatı dürüstçe yap ✨",
+      "Boynuna veya saçlarına hafifçe yaklaşıp parfümünün kokusunu içine çek 🌸",
+      "Omuzlarına veya ensesine 15 saniyelik rahatlatıcı, minik bir masaj yap 💆",
+      "Onun en çok hangi bakışından ya da gülüşünden etkilendiğini itiraf et 💖",
+      "Yanağına sıcacık bir öpücük bırakıp 'Bu turu kaybettim ama sana bayıldım' de 😘",
+      "En tatlı, cilveli ikili selfie'nizi hemen şimdi çekin 📸",
+      "Bir sonraki turun sonuna kadar elleriniz sımsıkı kenetlenmiş kalsın 🔒",
+      "Kulağına eğilip 'Kaybettim ama kazancım bu akşam sen oldun' diye fısılda 😉",
+      "Onun için 10 saniyelik çok tatlı, sevimli bir dans figürü sergile 💃",
+      "Saçlarını parmaklarınla hafifçe okşa ve gözlerine bakıp gülümse 💇",
+      "Onu ilk gördüğün an aklından geçen ilk düşünceyi açıkça söyle 💭",
+      "Sımsıkı ve kalpten en az 7 saniye boyunca sıcacık sarıl 🫂",
+      "Bir sonraki buluşmada ona en sevdiği tatlıyı veya kahveyi ısmarlama sözü ver ☕🍰",
+      "Parmağını hafifçe dudağına götürüp 'Bir anlığına sadece bana odaklan' de 🤫",
+      "Gözlerini kapat, onun parmak uçlarını hisset ve ona en büyüleyici iltifatını yap ✨"
+    ];
+
+    // 10 Adet DAHA HOT / Şampiyonluk Final Event Görevleri (İlk 20'den çok daha cesur ve ateşli)
+    const HOT_CHAMPION_DARES = [
+      "Boynunun en hassas noktasına 5 saniye boyunca sıcacık, derin bir öpücük kondur ve nefesini hissettir 💋🔥",
+      "Kulağına doğru iyice yaklaşıp sadece ikinizin duyacağı cüretkar bir fısıltıyla 'Bu gece kontrol tamamen sende...' de 🫦",
+      "Şampiyonun çok yakınına gelip gözlerini gözlerine dik, 15 saniye boyunca kıpırdamadan dudaklarına bak ve gülümse 👁️👄",
+      "Dudaklarına değecek kadar yaklaş, tam öpecekken geri çekilip gözlerinin içine bakarak 'Bunu ne kadar istediğini söyle' de 😉🔥",
+      "Şampiyonun ensesinden hafifçe tutarak kendine doğru çek, yanağından dudak kenarına doğru yavaş ve sıcak bir öpücük bırak 💋",
+      "Ellerini onun beline koy, kendine doğru sımsıkı çek ve kulağına onunla ilgili aklından geçen en ateşli düşünceyi fısılda 🤫🔥",
+      "Şampiyonun ellerini avuçlarının arasına al, parmaklarını tek tek öp ve ardından boynuna sıcacık bir nefes üfle 💨💋",
+      "Onun dudaklarına 3 saniyelik sıcacık, tutkulu bir zafer öpücüğü hediye et 💋✨",
+      "Şampiyonun göğsüne elini koy, kalp atışlarını hisset ve 'Şu an nasıl heyecanla çarptığını hissedebiliyorum' de ❤️‍🔥",
+      "Şampiyon için bir sonraki buluşmada baş başa geçireceğiniz, onun kurallarını belirleyeceği çok özel bir gece randevusu planla 🥂🌹"
+    ];
+
+    // Oyun State Objesi
+    let gameState = {
+      p1Name: "seray",
+      p2Name: "Sabri",
+      currentRound: 1,
+      totalRounds: 5,
+
+      p1Budget: 250,
+      p2Budget: 250,
+
+      p1Score: 0,
+      p2Score: 0,
+
+      p1JokerUsed: false,
+      p2JokerUsed: false,
+
+      // Geçerli tur seçimleri
+      p1Choice: 25,
+      p2Choice: 25,
+      p1RoundJoker: false,
+      p2RoundJoker: false,
+
+      // Hangi oyuncunun ekranı açık ('p1', 'p2', 'pass', 'roundResult', 'gameOver')
+      activeTurnView: 'p1',
+
+      // Geçmiş
+      history: [],
+      soundEnabled: true,
+      currentPenaltyText: "",
+      currentHotEventText: ""
+    };
+
+    /* =======================================================================
+       2. SES SENTEZLEYİCİSİ (Web Audio API - Bağımsız ve Kesintisiz)
+       ======================================================================= */
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx && AudioContextClass) {
+        audioCtx = new AudioContextClass();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playSound(type) {
+      if (!gameState.soundEnabled) return;
+      try {
+        initAudio();
+        if (!audioCtx) return;
+
+        const now = audioCtx.currentTime;
+
+        if (type === 'click') {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(480, now);
+          osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.05);
+        }
+        else if (type === 'tick') {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(600, now);
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.03);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.03);
+        }
+        else if (type === 'lock') {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(523.25, now);
+          osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.12);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.15);
+        }
+        else if (type === 'flame') {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(150, now);
+          osc.frequency.linearRampToValueAtTime(400, now + 0.15);
+          osc.frequency.exponentialRampToValueAtTime(100, now + 0.35);
+          gain.gain.setValueAtTime(0.25, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.35);
+        }
+        else if (type === 'beep') {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(440, now);
+          gain.gain.setValueAtTime(0.28, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.2);
+        }
+        else if (type === 'duel') {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(880, now);
+          osc.frequency.exponentialRampToValueAtTime(1320, now + 0.35);
+          gain.gain.setValueAtTime(0.35, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.4);
+        }
+        else if (type === 'fanfare') {
+          [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + i * 0.08);
+            gain.gain.setValueAtTime(0.25, now + i * 0.08);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.08 + 0.5);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now + i * 0.08);
+            osc.stop(now + i * 0.08 + 0.5);
+          });
+        }
+        else if (type === 'draw') {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(400, now);
+          osc.frequency.linearRampToValueAtTime(350, now + 0.25);
+          gain.gain.setValueAtTime(0.25, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.25);
+        }
+      } catch (e) {
+        console.warn("Audio play error", e);
+      }
+    }
+
+    function vibrateDevice(pattern) {
+      if ('vibrate' in navigator) {
+        try { navigator.vibrate(pattern); } catch (e) { }
+      }
+    }
+
+    /* =======================================================================
+       3. KONFETİ SİSTEMİ
+       ======================================================================= */
+    function triggerConfetti() {
+      if (typeof confetti === 'function') {
+        confetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+        setTimeout(() => {
+          confetti({ particleCount: 50, angle: 60, spread: 55, origin: { x: 0 } });
+          confetti({ particleCount: 50, angle: 120, spread: 55, origin: { x: 1 } });
+        }, 200);
+      } else {
+        runFallbackConfetti();
+      }
+    }
+
+    function runFallbackConfetti() {
+      const canvas = document.getElementById('customConfettiCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const particles = [];
+      const colors = ['#ec4899', '#3b82f6', '#f59e0b', '#10b981', '#a855f7', '#ffffff'];
+
+      for (let i = 0; i < 90; i++) {
+        particles.push({
+          x: canvas.width / 2,
+          y: canvas.height * 0.4,
+          vx: (Math.random() - 0.5) * 14,
+          vy: (Math.random() - 0.7) * 16,
+          size: Math.random() * 8 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * 360,
+          vRot: (Math.random() - 0.5) * 10,
+          alpha: 1
+        });
+      }
+
+      let frame = 0;
+      function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let alive = false;
+        particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.4;
+          p.rotation += p.vRot;
+          p.alpha -= 0.012;
+
+          if (p.alpha > 0) {
+            alive = true;
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate((p.rotation * Math.PI) / 180);
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = Math.max(0, p.alpha);
+            ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+            ctx.restore();
+          }
+        });
+
+        frame++;
+        if (alive && frame < 180) {
+          requestAnimationFrame(render);
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+      render();
+    }
+
+    /* =======================================================================
+       4. EKRAN GEÇİŞLERİ VE GÖRÜNTÜ GÜNCELLEME (BÜTÇE GİZLİLİK MANTIĞI)
+       ======================================================================= */
+    const screens = {
+      p1Turn: document.getElementById('p1TurnScreen'),
+      pass: document.getElementById('passScreen'),
+      p2Turn: document.getElementById('p2TurnScreen'),
+      countdown: document.getElementById('countdownScreen'),
+      roundResult: document.getElementById('roundResultScreen'),
+      gameOver: document.getElementById('gameOverScreen')
+    };
+
+    function showScreen(screenKey) {
+      Object.keys(screens).forEach(key => {
+        screens[key].style.display = (key === screenKey) ? 'block' : 'none';
+      });
+      updateAmbientGlow(screenKey);
+    }
+
+    function updateAmbientGlow(screenKey) {
+      const left = document.getElementById('ambientLeft');
+      const right = document.getElementById('ambientRight');
+      if (screenKey === 'p1Turn') {
+        left.style.opacity = '0.45';
+        right.style.opacity = '0.1';
+      } else if (screenKey === 'p2Turn') {
+        left.style.opacity = '0.1';
+        right.style.opacity = '0.45';
+      } else {
+        left.style.opacity = '0.25';
+        right.style.opacity = '0.25';
+      }
+    }
+
+    // Skor ve Üst Bilgi Kartlarını Güncelle (Gizlilik Korumalı)
+    function updateScoreboardUI() {
+      document.getElementById('p1DisplayName').innerText = gameState.p1Name;
+      document.getElementById('p2DisplayName').innerText = gameState.p2Name;
+
+      document.getElementById('p1ScoreVal').innerText = gameState.p1Score;
+      document.getElementById('p2ScoreVal').innerText = gameState.p2Score;
+
+      document.getElementById('roundCounterText').innerText = `Tur ${gameState.currentRound} / ${gameState.totalRounds}`;
+
+      // BÜTÇE GİZLİLİĞİ:
+      // Sıra seray'deyken Sabri'nin bütçesi gizlenir.
+      // Sıra Sabri'deyken seray'in bütçesi gizlenir.
+      // Tur sonucunda da heyecan bozulmasın diye rakip bütçeleri gizli tutulur!
+      // Sadece 5. tur bitince Game Over ekranında hepsi açıklanır.
+      const p1Box = document.getElementById('p1BudgetBox');
+      const p1Val = document.getElementById('p1BudgetVal');
+      const p2Box = document.getElementById('p2BudgetBox');
+      const p2Val = document.getElementById('p2BudgetVal');
+
+      if (gameState.activeTurnView === 'p1') {
+        // seray kendi bütçesini görür, Sabri'nin bütçesi gizli
+        p1Box.className = 'stat-box budget-box';
+        p1Val.innerText = gameState.p1Budget;
+
+        p2Box.className = 'stat-box budget-box hidden-budget';
+        p2Val.innerText = '🔒 Gizli';
+      } else if (gameState.activeTurnView === 'p2') {
+        // Sabri kendi bütçesini görür, seray'in bütçesi gizli
+        p1Box.className = 'stat-box budget-box hidden-budget';
+        p1Val.innerText = '🔒 Gizli';
+
+        p2Box.className = 'stat-box budget-box';
+        p2Val.innerText = gameState.p2Budget;
+      } else if (gameState.activeTurnView === 'gameOver') {
+        // Büyük final: Her ikisi de görünür
+        p1Box.className = 'stat-box budget-box';
+        p1Val.innerText = gameState.p1Budget;
+        p2Box.className = 'stat-box budget-box';
+        p2Val.innerText = gameState.p2Budget;
+      } else {
+        // Pass veya Round Result sırasında ikisinin de genel toplamı gizli tutulur
+        p1Box.className = 'stat-box budget-box hidden-budget';
+        p1Val.innerText = '🔒 Gizli';
+        p2Box.className = 'stat-box budget-box hidden-budget';
+        p2Val.innerText = '🔒 Gizli';
+      }
+
+      // Joker Mini Badges
+      const p1JokerEl = document.getElementById('p1JokerBadge');
+      if (gameState.p1RoundJoker) {
+        p1JokerEl.className = 'joker-mini-badge active-round';
+        p1JokerEl.innerText = '🔥 Bu Tur Aktif!';
+      } else if (gameState.p1JokerUsed) {
+        p1JokerEl.className = 'joker-mini-badge';
+        p1JokerEl.innerText = '⚪ Harcandı';
+      } else {
+        p1JokerEl.className = 'joker-mini-badge ready';
+        p1JokerEl.innerText = '🔥 Joker Hazır';
+      }
+
+      const p2JokerEl = document.getElementById('p2JokerBadge');
+      if (gameState.p2RoundJoker) {
+        p2JokerEl.className = 'joker-mini-badge active-round';
+        p2JokerEl.innerText = '🔥 Bu Tur Aktif!';
+      } else if (gameState.p2JokerUsed) {
+        p2JokerEl.className = 'joker-mini-badge';
+        p2JokerEl.innerText = '⚪ Harcandı';
+      } else {
+        p2JokerEl.className = 'joker-mini-badge ready';
+        p2JokerEl.innerText = '🔥 Joker Hazır';
+      }
+    }
+
+    /* =======================================================================
+       5. 1. OYUNCU (seray) DÖNGÜSÜ & ELLE GİRİŞ KONTROLÜ
+       ======================================================================= */
+    function setupPlayer1Turn() {
+      gameState.activeTurnView = 'p1';
+      showScreen('p1Turn');
+
+      document.getElementById('serayCard').classList.add('active-turn');
+      document.getElementById('sabriCard').classList.remove('active-turn');
+      document.getElementById('roundStatusBadge').innerText = `${gameState.p1Name}'in Hamlesi`;
+      document.getElementById('p1TurnBadgeName').innerText = gameState.p1Name;
+
+      // Maksimum seçilebilecek sayı hesapla: min(100, kalan bütçe)
+      const maxAllowed = Math.min(100, gameState.p1Budget);
+      const slider = document.getElementById('p1Slider');
+      const input = document.getElementById('p1NumberInput');
+      slider.max = maxAllowed;
+      input.max = maxAllowed;
+
+      // Başlangıç değeri
+      let initialVal = Math.min(25, maxAllowed);
+      slider.value = initialVal;
+      input.value = initialVal;
+      gameState.p1Choice = initialVal;
+      gameState.p1RoundJoker = false;
+
+      document.getElementById('p1MaxPossibleText').innerText = `Maks: ${maxAllowed}`;
+      document.getElementById('p1MaxBtn').innerText = `MAKS (${maxAllowed})`;
+
+      // Joker kartı durumu
+      const jokerCard = document.getElementById('p1JokerToggle');
+      const jokerSubtext = document.getElementById('p1JokerSubtext');
+      jokerCard.classList.remove('active');
+      if (gameState.p1JokerUsed) {
+        jokerCard.className = 'joker-toggle-card disabled';
+        jokerSubtext.innerText = 'Bu maçtaki joker hakkınızı daha önce kullandınız.';
+      } else {
+        jokerCard.className = 'joker-toggle-card';
+        jokerSubtext.innerText = 'Kazanana 2 Skor Puanı verir! (1 kez kullanılabilir)';
+      }
+
+      updateP1CostDisplay(initialVal);
+      updateScoreboardUI();
+    }
+
+    function updateP1CostDisplay(val) {
+      gameState.p1Choice = val;
+      const remainAfter = gameState.p1Budget - val;
+      document.getElementById('p1CostHint').innerText = `Kalan Bütçe: ${gameState.p1Budget} → Seçim sonrası: ${remainAfter}`;
+    }
+
+    // Slider hareket ettikçe elle giriş kutusunu güncelle
+    document.getElementById('p1Slider').addEventListener('input', (e) => {
+      playSound('tick');
+      const val = parseInt(e.target.value) || 0;
+      document.getElementById('p1NumberInput').value = val;
+      updateP1CostDisplay(val);
+    });
+
+    // Elle kutuya yazıldıkça slider'ı güncelle
+    document.getElementById('p1NumberInput').addEventListener('input', (e) => {
+      let val = parseInt(e.target.value);
+      const maxAllowed = Math.min(100, gameState.p1Budget);
+
+      if (isNaN(val)) val = 0;
+      if (val < 0) val = 0;
+      if (val > maxAllowed) val = maxAllowed;
+
+      document.getElementById('p1Slider').value = val;
+      updateP1CostDisplay(val);
+    });
+
+    document.getElementById('p1NumberInput').addEventListener('blur', (e) => {
+      let val = parseInt(e.target.value);
+      const maxAllowed = Math.min(100, gameState.p1Budget);
+      if (isNaN(val) || val < 0) val = 0;
+      if (val > maxAllowed) val = maxAllowed;
+      e.target.value = val;
+      document.getElementById('p1Slider').value = val;
+      updateP1CostDisplay(val);
+    });
+
+    // Sayıyı -1, +1, -5, +5 adım butonlarıyla değiştirme
+    function stepNumber(player, delta) {
+      playSound('tick');
+      vibrateDevice(20);
+      if (player === 'p1') {
+        const input = document.getElementById('p1NumberInput');
+        const slider = document.getElementById('p1Slider');
+        const maxAllowed = Math.min(100, gameState.p1Budget);
+        let current = parseInt(input.value) || 0;
+        let next = Math.max(0, Math.min(maxAllowed, current + delta));
+        input.value = next;
+        slider.value = next;
+        updateP1CostDisplay(next);
+      } else {
+        const input = document.getElementById('p2NumberInput');
+        const slider = document.getElementById('p2Slider');
+        const maxAllowed = Math.min(100, gameState.p2Budget);
+        let current = parseInt(input.value) || 0;
+        let next = Math.max(0, Math.min(maxAllowed, current + delta));
+        input.value = next;
+        slider.value = next;
+        updateP2CostDisplay(next);
+      }
+    }
+
+    function setPreset(player, val) {
+      playSound('click');
+      vibrateDevice(25);
+      if (player === 'p1') {
+        const maxAllowed = Math.min(100, gameState.p1Budget);
+        const actual = Math.min(val, maxAllowed);
+        document.getElementById('p1Slider').value = actual;
+        document.getElementById('p1NumberInput').value = actual;
+        updateP1CostDisplay(actual);
+      } else {
+        const maxAllowed = Math.min(100, gameState.p2Budget);
+        const actual = Math.min(val, maxAllowed);
+        document.getElementById('p2Slider').value = actual;
+        document.getElementById('p2NumberInput').value = actual;
+        updateP2CostDisplay(actual);
+      }
+    }
+
+    function setPresetMax(player) {
+      playSound('click');
+      vibrateDevice(40);
+      if (player === 'p1') {
+        const maxAllowed = Math.min(100, gameState.p1Budget);
+        document.getElementById('p1Slider').value = maxAllowed;
+        document.getElementById('p1NumberInput').value = maxAllowed;
+        updateP1CostDisplay(maxAllowed);
+      } else {
+        const maxAllowed = Math.min(100, gameState.p2Budget);
+        document.getElementById('p2Slider').value = maxAllowed;
+        document.getElementById('p2NumberInput').value = maxAllowed;
+        updateP2CostDisplay(maxAllowed);
+      }
+    }
+
+    function toggleJoker(player) {
+      if (player === 'p1') {
+        if (gameState.p1JokerUsed) return;
+        gameState.p1RoundJoker = !gameState.p1RoundJoker;
+        const card = document.getElementById('p1JokerToggle');
+        if (gameState.p1RoundJoker) {
+          card.classList.add('active');
+          playSound('flame');
+          vibrateDevice([40, 60, 40]);
+        } else {
+          card.classList.remove('active');
+          playSound('click');
+        }
+      } else {
+        if (gameState.p2JokerUsed) return;
+        gameState.p2RoundJoker = !gameState.p2RoundJoker;
+        const card = document.getElementById('p2JokerToggle');
+        if (gameState.p2RoundJoker) {
+          card.classList.add('active');
+          playSound('flame');
+          vibrateDevice([40, 60, 40]);
+        } else {
+          card.classList.remove('active');
+          playSound('click');
+        }
+      }
+      updateScoreboardUI();
+    }
+
+    function lockPlayer1Choice() {
+      // Input değerini son kez doğrula
+      const input = document.getElementById('p1NumberInput');
+      let val = parseInt(input.value);
+      const maxAllowed = Math.min(100, gameState.p1Budget);
+      if (isNaN(val) || val < 0) val = 0;
+      if (val > maxAllowed) val = maxAllowed;
+      gameState.p1Choice = val;
+
+      playSound('lock');
+      vibrateDevice(60);
+
+      gameState.activeTurnView = 'pass';
+      updateScoreboardUI();
+
+      // Gizlilik kalkanına geç
+      document.getElementById('passPlayerDoneName').innerText = gameState.p1Name;
+      document.getElementById('passPlayerNextName').innerText = gameState.p2Name;
+      document.getElementById('passTitleText').innerText = `Telefonu ${gameState.p2Name}'ye Uzatın!`;
+      document.getElementById('passBtnText').innerText = `Ben ${gameState.p2Name}, Hazırım!`;
+
+      document.getElementById('serayCard').classList.remove('active-turn');
+      showScreen('pass');
+    }
+
+    /* =======================================================================
+       6. 2. OYUNCU (SABRİ) DÖNGÜSÜ & ELLE GİRİŞ KONTROLÜ
+       ======================================================================= */
+    function startPlayer2Turn() {
+      playSound('click');
+      gameState.activeTurnView = 'p2';
+      showScreen('p2Turn');
+
+      document.getElementById('serayCard').classList.remove('active-turn');
+      document.getElementById('sabriCard').classList.add('active-turn');
+      document.getElementById('roundStatusBadge').innerText = `${gameState.p2Name}'nin Hamlesi`;
+      document.getElementById('p2TurnBadgeName').innerText = gameState.p2Name;
+
+      // Eğer seray bu tur joker kullandıysa Sabri'ye bildir!
+      const jokerWarning = document.getElementById('p2JokerWarningBanner');
+      if (gameState.p1RoundJoker) {
+        jokerWarning.style.display = 'flex';
+        document.getElementById('p2JokerWarningText').innerText = `🔥 DİKKAT: ${gameState.p1Name} bu tur "İkiye Katla" jokerini kullandı!`;
+      } else {
+        jokerWarning.style.display = 'none';
+      }
+
+      // Sabri'nin bütçe sınırları
+      const maxAllowed = Math.min(100, gameState.p2Budget);
+      const slider = document.getElementById('p2Slider');
+      const input = document.getElementById('p2NumberInput');
+      slider.max = maxAllowed;
+      input.max = maxAllowed;
+
+      let initialVal = Math.min(25, maxAllowed);
+      slider.value = initialVal;
+      input.value = initialVal;
+      gameState.p2Choice = initialVal;
+      gameState.p2RoundJoker = false;
+
+      document.getElementById('p2MaxPossibleText').innerText = `Maks: ${maxAllowed}`;
+      document.getElementById('p2MaxBtn').innerText = `MAKS (${maxAllowed})`;
+
+      // Joker kartı durumu
+      const jokerCard = document.getElementById('p2JokerToggle');
+      const jokerSubtext = document.getElementById('p2JokerSubtext');
+      jokerCard.classList.remove('active');
+      if (gameState.p2JokerUsed) {
+        jokerCard.className = 'joker-toggle-card disabled';
+        jokerSubtext.innerText = 'Bu maçtaki joker hakkınızı daha önce kullandınız.';
+      } else {
+        jokerCard.className = 'joker-toggle-card';
+        jokerSubtext.innerText = 'Kazanana 2 Skor Puanı verir! (1 kez kullanılabilir)';
+      }
+
+      updateP2CostDisplay(initialVal);
+      updateScoreboardUI();
+    }
+
+    function updateP2CostDisplay(val) {
+      gameState.p2Choice = val;
+      const remainAfter = gameState.p2Budget - val;
+      document.getElementById('p2CostHint').innerText = `Kalan Bütçe: ${gameState.p2Budget} → Seçim sonrası: ${remainAfter}`;
+    }
+
+    // Slider hareket ettikçe elle giriş kutusunu güncelle
+    document.getElementById('p2Slider').addEventListener('input', (e) => {
+      playSound('tick');
+      const val = parseInt(e.target.value) || 0;
+      document.getElementById('p2NumberInput').value = val;
+      updateP2CostDisplay(val);
+    });
+
+    // Elle kutuya yazıldıkça slider'ı güncelle
+    document.getElementById('p2NumberInput').addEventListener('input', (e) => {
+      let val = parseInt(e.target.value);
+      const maxAllowed = Math.min(100, gameState.p2Budget);
+
+      if (isNaN(val)) val = 0;
+      if (val < 0) val = 0;
+      if (val > maxAllowed) val = maxAllowed;
+
+      document.getElementById('p2Slider').value = val;
+      updateP2CostDisplay(val);
+    });
+
+    document.getElementById('p2NumberInput').addEventListener('blur', (e) => {
+      let val = parseInt(e.target.value);
+      const maxAllowed = Math.min(100, gameState.p2Budget);
+      if (isNaN(val) || val < 0) val = 0;
+      if (val > maxAllowed) val = maxAllowed;
+      e.target.value = val;
+      document.getElementById('p2Slider').value = val;
+      updateP2CostDisplay(val);
+    });
+
+    function lockPlayer2Choice() {
+      const input = document.getElementById('p2NumberInput');
+      let val = parseInt(input.value);
+      const maxAllowed = Math.min(100, gameState.p2Budget);
+      if (isNaN(val) || val < 0) val = 0;
+      if (val > maxAllowed) val = maxAllowed;
+      gameState.p2Choice = val;
+
+      playSound('lock');
+      vibrateDevice(60);
+      document.getElementById('sabriCard').classList.remove('active-turn');
+      startDuelCountdown();
+    }
+
+    /* =======================================================================
+       7. 3, 2, 1 GERİ SAYIM VE DÜELLO
+       ======================================================================= */
+    function startDuelCountdown() {
+      gameState.activeTurnView = 'countdown';
+      updateScoreboardUI();
+      showScreen('countdown');
+      document.getElementById('roundStatusBadge').innerText = 'DÜELLO! ⚔️';
+
+      const digitEl = document.getElementById('countdownDigit');
+      const subEl = document.getElementById('countdownSub');
+
+      let count = 3;
+      digitEl.innerText = count;
+      subEl.innerText = "Nefesler tutuldu...";
+      playSound('beep');
+      vibrateDevice(50);
+
+      const interval = setInterval(() => {
+        count--;
+        if (count > 0) {
+          digitEl.innerText = count;
+          playSound('beep');
+          vibrateDevice(50);
+        } else if (count === 0) {
+          digitEl.innerText = "⚔️";
+          subEl.innerText = "SAYILAR AÇIKLANIYOR!";
+          playSound('duel');
+          vibrateDevice([80, 50, 80]);
+        } else {
+          clearInterval(interval);
+          resolveRound();
+        }
+      }, 750);
+    }
+
+    /* =======================================================================
+       8. TUR DEĞERLENDİRME & ROMANTİK CEZA SEÇİMİ
+       ======================================================================= */
+    function resolveRound() {
+      gameState.activeTurnView = 'roundResult';
+      const p1Num = gameState.p1Choice;
+      const p2Num = gameState.p2Choice;
+
+      // Joker kontrolü
+      const jokerActiveThisRound = gameState.p1RoundJoker || gameState.p2RoundJoker;
+      const pointsAtStake = jokerActiveThisRound ? 2 : 1;
+
+      // Bütçeleri düş (kazansa da kaybetse de)
+      gameState.p1Budget -= p1Num;
+      gameState.p2Budget -= p2Num;
+
+      // Kullanılan jokerleri işaretle
+      if (gameState.p1RoundJoker) gameState.p1JokerUsed = true;
+      if (gameState.p2RoundJoker) gameState.p2JokerUsed = true;
+
+      let winner = null;
+      let winnerName = "";
+
+      if (p1Num > p2Num) {
+        winner = 'p1';
+        winnerName = gameState.p1Name;
+        gameState.p1Score += pointsAtStake;
+      } else if (p2Num > p1Num) {
+        winner = 'p2';
+        winnerName = gameState.p2Name;
+        gameState.p2Score += pointsAtStake;
+      } else {
+        winner = 'draw';
+      }
+
+      // Ceza seçimi (İlk 20 Romantik Ceza Havuzundan)
+      let assignedPenalty = "";
+      let penaltyTarget = "";
+
+      if (winner === 'p1') {
+        penaltyTarget = `${gameState.p2Name} için Ceza Zamanı:`;
+        assignedPenalty = getRandomPenalty();
+      } else if (winner === 'p2') {
+        penaltyTarget = `${gameState.p1Name} için Ceza Zamanı:`;
+        assignedPenalty = getRandomPenalty();
+      } else {
+        penaltyTarget = "Beraberlik Cezası (İkiniz Birlikte):";
+        assignedPenalty = "Gözlerinizin içine 10 saniye boyunca bakın ve sıcacık sarılın! ❤️";
+      }
+
+      gameState.currentPenaltyText = assignedPenalty;
+
+      // Geçmişe kaydet
+      gameState.history.push({
+        roundNum: gameState.currentRound,
+        p1Num,
+        p2Num,
+        winner,
+        winnerName,
+        points: (winner === 'draw' ? 0 : pointsAtStake),
+        joker: jokerActiveThisRound,
+        p1BudgetLeft: gameState.p1Budget,
+        p2BudgetLeft: gameState.p2Budget,
+        penalty: assignedPenalty
+      });
+
+      // UI Güncelle
+      updateScoreboardUI();
+      displayRoundResultUI(winner, winnerName, pointsAtStake, p1Num, p2Num, penaltyTarget, assignedPenalty);
+    }
+
+    function getRandomPenalty() {
+      const index = Math.floor(Math.random() * ROMANTIC_PENALTIES.length);
+      return ROMANTIC_PENALTIES[index];
+    }
+
+    function rerollCurrentPenalty() {
+      playSound('click');
+      vibrateDevice(30);
+      const newPenalty = getRandomPenalty();
+      gameState.currentPenaltyText = newPenalty;
+      document.getElementById('currentPenaltyText').innerText = `"${newPenalty}"`;
+      if (gameState.history.length > 0) {
+        gameState.history[gameState.history.length - 1].penalty = newPenalty;
+      }
+    }
+
+    function displayRoundResultUI(winner, winnerName, pointsAtStake, p1Num, p2Num, penaltyTarget, assignedPenalty) {
+      showScreen('roundResult');
+
+      const banner = document.getElementById('outcomeBanner');
+      const title = document.getElementById('outcomeTitle');
+      const subtitle = document.getElementById('outcomeSubtitle');
+
+      const card1 = document.getElementById('revealCardP1');
+      const card2 = document.getElementById('revealCardP2');
+
+      card1.className = 'reveal-card seray';
+      card2.className = 'reveal-card sabri';
+
+      document.getElementById('revealP1Name').innerText = gameState.p1Name;
+      document.getElementById('revealP2Name').innerText = gameState.p2Name;
+      document.getElementById('revealP1Num').innerText = p1Num;
+      document.getElementById('revealP2Num').innerText = p2Num;
+      document.getElementById('revealP1Drain').innerText = `-${p1Num} Bütçe`;
+      document.getElementById('revealP2Drain').innerText = `-${p2Num} Bütçe`;
+
+      const penaltyTag = document.getElementById('penaltyHeaderTag');
+
+      if (winner === 'p1') {
+        banner.className = 'outcome-banner win-banner';
+        title.innerText = `🎉 ${gameState.p1Name.toUpperCase()} KAZANDI!`;
+        subtitle.innerText = `+${pointsAtStake} Skor Puanı eklendi!`;
+        card1.classList.add('winner');
+        penaltyTag.innerText = `${gameState.p2Name}'nin Romantik Cezası`;
+        playSound('fanfare');
+        triggerConfetti();
+      } else if (winner === 'p2') {
+        banner.className = 'outcome-banner win-banner';
+        title.innerText = `🎉 ${gameState.p2Name.toUpperCase()} KAZANDI!`;
+        subtitle.innerText = `+${pointsAtStake} Skor Puanı eklendi!`;
+        card2.classList.add('winner');
+        penaltyTag.innerText = `${gameState.p1Name}'in Romantik Cezası`;
+        playSound('fanfare');
+        triggerConfetti();
+      } else {
+        banner.className = 'outcome-banner draw-banner';
+        title.innerText = `🤝 BERABERE!`;
+        subtitle.innerText = `Sayılar eşit (${p1Num} - ${p2Num}). Bu tur kimse puan kazanamadı.`;
+        penaltyTag.innerText = `Ortak Romantik Görev`;
+        playSound('draw');
+      }
+
+      document.getElementById('penaltyTargetText').innerText = penaltyTarget;
+      document.getElementById('currentPenaltyText').innerText = `"${assignedPenalty}"`;
+
+      // Next Round Button Metni
+      const nextBtn = document.getElementById('nextRoundBtn');
+      if (gameState.currentRound < gameState.totalRounds) {
+        nextBtn.innerHTML = `<span>Sonraki Tura Geç (Tur ${gameState.currentRound + 1}/${gameState.totalRounds})</span> ➔`;
+      } else {
+        nextBtn.innerHTML = `<span>Maç Sonucunu & HOT Görevi Gör 🔥🏆</span>`;
+      }
+    }
+
+    function proceedToNextRound() {
+      playSound('click');
+      if (gameState.currentRound < gameState.totalRounds) {
+        gameState.currentRound++;
+        gameState.p1RoundJoker = false;
+        gameState.p2RoundJoker = false;
+        setupPlayer1Turn();
+      } else {
+        displayFinalGameOver();
+      }
+    }
+
+    /* =======================================================================
+       9. MAÇ SONUCU & 10 ADET ÖZEL "HOT" ŞAMPİYONLUK EVENT GÖREVLERİ
+       ======================================================================= */
+    function getRandomHotDare() {
+      const index = Math.floor(Math.random() * HOT_CHAMPION_DARES.length);
+      return HOT_CHAMPION_DARES[index];
+    }
+
+    function rerollFinalHotDare() {
+      playSound('flame');
+      vibrateDevice([40, 60, 40]);
+      const newHotDare = getRandomHotDare();
+      gameState.currentHotEventText = newHotDare;
+      document.getElementById('currentHotEventText').innerText = `"${newHotDare}"`;
+    }
+
+    function displayFinalGameOver() {
+      gameState.activeTurnView = 'gameOver';
+      updateScoreboardUI();
+      showScreen('gameOver');
+      playSound('fanfare');
+      triggerConfetti();
+      setTimeout(triggerConfetti, 600);
+
+      document.getElementById('roundStatusBadge').innerText = 'MAÇ BİTTİ';
+
+      const p1S = gameState.p1Score;
+      const p2S = gameState.p2Score;
+
+      const titleEl = document.getElementById('finalWinnerText');
+      const subEl = document.getElementById('finalWinnerSubtitle');
+      const trophyEl = document.getElementById('finalTrophy');
+      const hotTagEl = document.getElementById('hotEventTag');
+      const hotTargetEl = document.getElementById('hotEventTargetText');
+
+      let championName = "";
+      let loserName = "";
+
+      if (p1S > p2S) {
+        championName = gameState.p1Name;
+        loserName = gameState.p2Name;
+        titleEl.innerText = `👑 ${championName} Şampiyon!`;
+        subEl.innerText = `${championName} 5 turluk düelloyu zaferle tamamladı!`;
+        trophyEl.innerText = '🏆';
+        hotTagEl.innerText = `🔥 ${championName.toUpperCase()}'NİN BÜYÜK ZAFER ÖDÜLÜ`;
+        hotTargetEl.innerText = `Kaybeden ${loserName}, Şampiyon ${championName}'e bu görevi yapmak zorunda:`;
+      } else if (p2S > p1S) {
+        championName = gameState.p2Name;
+        loserName = gameState.p1Name;
+        titleEl.innerText = `👑 ${championName} Şampiyon!`;
+        subEl.innerText = `${championName} 5 turluk düelloyu zaferle tamamladı!`;
+        trophyEl.innerText = '🏆';
+        hotTagEl.innerText = `🔥 ${championName.toUpperCase()}'NİN BÜYÜK ZAFER ÖDÜLÜ`;
+        hotTargetEl.innerText = `Kaybeden ${loserName}, Şampiyon ${championName}'e bu görevi yapmak zorunda:`;
+      } else {
+        titleEl.innerText = `🤝 Maç Berabere!`;
+        subEl.innerText = `İnanılmaz bir tutku ve denge! Skorlar eşit bitti.`;
+        trophyEl.innerText = '❤️‍🔥';
+        hotTagEl.innerText = `🔥 ORTAK HOT BÜYÜK FİNAL GÖREVİ`;
+        hotTargetEl.innerText = `${gameState.p1Name} & ${gameState.p2Name} birlikte yerine getirecek:`;
+      }
+
+      // Rastgele bir HOT dare seç
+      const hotDare = getRandomHotDare();
+      gameState.currentHotEventText = hotDare;
+      document.getElementById('currentHotEventText').innerText = `"${hotDare}"`;
+
+      // Kalan bütçelerin büyük ifşası
+      document.getElementById('finalP1Name').innerText = gameState.p1Name;
+      document.getElementById('finalP2Name').innerText = gameState.p2Name;
+      document.getElementById('finalP1Score').innerText = p1S;
+      document.getElementById('finalP2Score').innerText = p2S;
+      document.getElementById('finalP1RemainingBudget').innerText = `⚡ ${gameState.p1Budget} Kalan Bütçe`;
+      document.getElementById('finalP2RemainingBudget').innerText = `⚡ ${gameState.p2Budget} Kalan Bütçe`;
+
+      // Tur geçmiş tablosunu oluştur
+      const historyContainer = document.getElementById('historyRowsContainer');
+      historyContainer.innerHTML = '';
+
+      gameState.history.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'history-row';
+
+        let winText = "Berabere";
+        if (item.winner === 'p1') winText = `🏆 ${gameState.p1Name} (+${item.points})`;
+        else if (item.winner === 'p2') winText = `🏆 ${gameState.p2Name} (+${item.points})`;
+
+        row.innerHTML = `
+          <div class="history-tag">Tur ${item.roundNum}</div>
+          <div class="seray-text" style="font-weight: 700;">${item.p1Num} ${item.joker && gameState.p1JokerUsed ? '🔥' : ''}</div>
+          <div class="sabri-text" style="font-weight: 700;">${item.p2Num} ${item.joker && gameState.p2JokerUsed ? '🔥' : ''}</div>
+          <div style="font-size: 0.75rem; font-weight: 700; color: #cbd5e1;">${winText}</div>
+        `;
+        historyContainer.appendChild(row);
+      });
+    }
+
+    function restartRematch() {
+      playSound('click');
+      vibrateDevice([40, 50, 40]);
+
+      gameState.currentRound = 1;
+      gameState.p1Budget = 250;
+      gameState.p2Budget = 250;
+      gameState.p1Score = 0;
+      gameState.p2Score = 0;
+      gameState.p1JokerUsed = false;
+      gameState.p2JokerUsed = false;
+      gameState.p1RoundJoker = false;
+      gameState.p2RoundJoker = false;
+      gameState.history = [];
+
+      setupPlayer1Turn();
+    }
+
+    /* =======================================================================
+       10. AYARLAR & KURALLAR MODAL VE SES YÖNETİMİ
+       ======================================================================= */
+    const rulesBtn = document.getElementById('rulesBtn');
+    const rulesModal = document.getElementById('rulesModal');
+    const soundToggleBtn = document.getElementById('soundToggleBtn');
+
+    rulesBtn.addEventListener('click', () => {
+      playSound('click');
+      document.getElementById('inputNameP1').value = gameState.p1Name;
+      document.getElementById('inputNameP2').value = gameState.p2Name;
+      rulesModal.classList.add('active');
+    });
+
+    function closeRulesModal() {
+      playSound('click');
+      rulesModal.classList.remove('active');
+    }
+
+    rulesModal.addEventListener('click', (e) => {
+      if (e.target === rulesModal) closeRulesModal();
+    });
+
+    function savePlayerNames() {
+      const p1 = document.getElementById('inputNameP1').value.trim();
+      const p2 = document.getElementById('inputNameP2').value.trim();
+      if (p1) gameState.p1Name = p1;
+      if (p2) gameState.p2Name = p2;
+      playSound('lock');
+      updateScoreboardUI();
+      closeRulesModal();
+    }
+
+    soundToggleBtn.addEventListener('click', () => {
+      gameState.soundEnabled = !gameState.soundEnabled;
+      soundToggleBtn.innerText = gameState.soundEnabled ? '🔊' : '🔇';
+      if (gameState.soundEnabled) playSound('click');
+    });
+
+    /* =======================================================================
+       11. İLK BAŞLATMA
+       ======================================================================= */
+    window.addEventListener('DOMContentLoaded', () => {
+      setupPlayer1Turn();
+    });
+
+    // Mobil cihazlarda sesin ilk dokunuşta aktifleşmesi için listener
+    document.addEventListener('touchstart', initAudio, { once: true });
+    document.addEventListener('click', initAudio, { once: true });
+  </script>
+</body>
+
+</html>
